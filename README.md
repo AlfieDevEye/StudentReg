@@ -20,7 +20,7 @@ npm run dev:vercel
 Copy `.env.example` to `.env.local` for local Vercel testing, and add the same values in Vercel project settings before deploying.
 
 ```bash
-ADMIN_SESSION_SECRET=change-this-to-a-long-random-secret
+ADMIN_SESSION_SECRET=This-to-a-long-random-secret
 ADMIN_USERS=[{"username":"admin1","password":"admin1-password"},{"username":"admin2","password":"admin2-password"}]
 GOOGLE_SERVICE_ACCOUNT_EMAIL=your-service-account@your-project.iam.gserviceaccount.com
 GOOGLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nYOUR_PRIVATE_KEY\n-----END PRIVATE KEY-----\n"
