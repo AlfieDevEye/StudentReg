@@ -53,6 +53,52 @@ const departments = [
   'Theatre Arts',
   'Tourism and Hospitality Studies',
 ]
+const programmes = [
+'Accounting',
+'Biochemistry',
+'Bioinformatics',
+'Business Administration',
+'Christian Religious Studies',
+'Communication and Media Studies',
+'Computer Science',
+'Economics',
+'English (Language Emphasis)',
+'English (Literature Emphasis)',
+'Environmental and Analytical Chemistry',
+'Finance',
+'Gender and Development Studies',
+'History and International Studies',
+'Hospitality and Tourism Management',
+'Humanitarian and Development Studies',
+'Industrial Chemistry',
+'Law',
+'Management',
+'Master of Business Administration',
+'Materials Chemistry',
+'Mathematics',
+'Microbiology (Environmental Microbiology)',
+'Microbiology (Food Microbiology)',
+'Microbiology (Medical Microbiology)',
+'Molecular Biology and Genomics',
+'Peace and Governance Studies',
+'Peace and Religion Studies',
+'Physics (Communication Physics)',
+'Physics (Instrumentation Physics)',
+'Physics (Lower Atmospheric Physics)',
+'Physics (Radiation and Health Physics)',
+'Physics (Renewable Energy Physics)',
+'Physics (Solid Earth Physics-Geophysics)',
+'Physics (Theoretical and Computational Physics)',
+'Political Science',
+'Psychology (Developmental Psychology)',
+'Psychology (Clinical Psychology)',
+'Psychology (Social Psychology)',
+'Social Work',
+'Sociology',
+'Statistics',
+'Theatre Arts',
+'Transport Management',
+]
 
 const degrees = ['PGD', 'MA', 'MSC', 'PhD', 'Mphil-PhD', 'LLM', 'MBA']
 
@@ -505,13 +551,19 @@ function App() {
 
               <label>
                 Programme *
-                <input
+                <select
                   name="programme"
                   onChange={updateStudent}
-                  placeholder="Enter programme"
                   required
                   value={student.programme}
-                />
+                >
+                  <option value="">Select programme</option>
+                  {programmes.map((programme) => (
+                    <option key={programme} value={programme}>
+                      {programme}
+                    </option>
+                  ))}
+                </select>
               </label>
 
               <label>
