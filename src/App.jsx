@@ -33,6 +33,7 @@ const initialStudent = {
   studyMode: '',
 }
 
+
 const departments = [
   'Accounting',
   'Biochemistry',
