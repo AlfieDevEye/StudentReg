@@ -2,6 +2,7 @@ import crypto from 'node:crypto'
 import { verifyToken } from './_auth.js'
 
 const requiredFields = [
+  'registrationType',
   'firstName',
   'lastName',
   'gender',
@@ -16,6 +17,11 @@ const requiredFields = [
   'studyMode',
 ]
 
+const registrationSheets = {
+  NewMatricNo: 'NewMatricNo',
+  Retained: 'Retained',
+}
+
 function base64Url(value) {
   return Buffer.from(value).toString('base64url')
 }
@@ -28,8 +34,13 @@ function hasGoogleSheetConfig() {
   )
 }
 
-function getSheetName() {
-  return (process.env.GOOGLE_SHEET_RANGE || 'Students!A:O').split('!')[0] || 'Students'
+function getSheetName(registrationType) {
+  return registrationSheets[registrationType] || ''
+}
+
+function getSheetRange(registrationType) {
+  const sheetName = getSheetName(registrationType)
+  return sheetName ? `${sheetName}!A:O` : ''
 }
 
 function formatSubmittedDate(date = new Date()) {
@@ -80,8 +91,8 @@ async function getGoogleAccessToken() {
   return tokenResult.access_token
 }
 
-async function getNextSerialNumber(accessToken) {
-  const range = encodeURIComponent(`${getSheetName()}!A:A`)
+async function getNextSerialNumber(accessToken, registrationType) {
+  const range = encodeURIComponent(`${getSheetName(registrationType)}!A:A`)
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${process.env.GOOGLE_SHEET_ID}/values/${range}`
 
   const sheetResponse = await fetch(url, {
@@ -98,8 +109,8 @@ async function getNextSerialNumber(accessToken) {
   return Math.max(sheetResult.values?.length || 0, 1)
 }
 
-async function appendToSheet(row, accessToken) {
-  const range = encodeURIComponent(process.env.GOOGLE_SHEET_RANGE || 'Students!A:O')
+async function appendToSheet(row, accessToken, registrationType) {
+  const range = encodeURIComponent(getSheetRange(registrationType))
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${process.env.GOOGLE_SHEET_ID}/values/${range}:append?valueInputOption=USER_ENTERED`
 
   const sheetResponse = await fetch(url, {
@@ -136,6 +147,11 @@ export default async function handler(request, response) {
     return response.status(400).json({ message: 'Please complete all required fields.' })
   }
 
+  const registrationType = getCellValue(student, 'registrationType')
+  if (!registrationSheets[registrationType]) {
+    return response.status(400).json({ message: 'Please select a valid registration type.' })
+  }
+
   const submittedAt = formatSubmittedDate()
   const studentName = [
     String(student.lastName || '').trim().toUpperCase(),
@@ -155,7 +171,7 @@ export default async function handler(request, response) {
     }
 
     const accessToken = await getGoogleAccessToken()
-    const serialNumber = await getNextSerialNumber(accessToken)
+    const serialNumber = await getNextSerialNumber(accessToken, registrationType)
     const row = [
       serialNumber,
       '',
@@ -174,8 +190,12 @@ export default async function handler(request, response) {
       admin.username,
     ]
 
-    await appendToSheet(row, accessToken)
-    return response.status(200).json({ saved: true, registeredBy: admin.username })
+    await appendToSheet(row, accessToken, registrationType)
+    return response.status(200).json({
+      saved: true,
+      registeredBy: admin.username,
+      registrationType,
+    })
   } catch (error) {
     return response.status(500).json({ message: error.message })
   }

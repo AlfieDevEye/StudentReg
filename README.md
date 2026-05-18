@@ -25,13 +25,12 @@ ADMIN_USERS=[{"username":"admin1","password":"admin1-password"},{"username":"adm
 GOOGLE_SERVICE_ACCOUNT_EMAIL=your-service-account@your-project.iam.gserviceaccount.com
 GOOGLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nYOUR_PRIVATE_KEY\n-----END PRIVATE KEY-----\n"
 GOOGLE_SHEET_ID=your-google-sheet-id
-GOOGLE_SHEET_RANGE=Students!A:O
 GOOGLE_ADMIN_SHEET_RANGE=Admins!A:H
 ```
 
 ## Google Sheet columns
 
-Create a sheet tab named `Students` with these columns:
+Create sheet tabs named `NewMatricNo` and `Retained` with these columns:
 
 ```text
 SN | Matric. No. | Full Name | Programme | Department | Degree | Semester | Email | Phone No. | State Of Origin | Date Of Birth | Gender | Study Mode | Submitted At | Registered By
@@ -39,10 +38,24 @@ SN | Matric. No. | Full Name | Programme | Department | Degree | Semester | Emai
 
 Share the Google Sheet with the service account email as an editor.
 
+Admins listed in `ADMIN_USERS` are the only approved login users. They can log in even if the Google Sheet ID is changed or unavailable.
+
 Create an `Admins` sheet tab with these columns:
 
 ```text
 Submitted At | First Name | Last Name | Phone Number | Username | Email | Password Hash | Status
 ```
 
-Admins can log in after their `Status` value is changed to `Approved`.
+Admin registration submissions are requests only. To approve an admin, add that admin to the server-side `ADMIN_USERS` environment variable.
+
+Generate a hashed admin entry with:
+
+```bash
+npm run admin:hash -- admin3 admin3-password
+```
+
+The command prints one JSON object. Add it to `ADMIN_USERS`, for example:
+
+```env
+ADMIN_USERS=[{"username":"admin1","password":"existing-password"},{"username":"admin3","password":"generated-salt:generated-hash"}]
+```

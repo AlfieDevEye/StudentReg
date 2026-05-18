@@ -1,6 +1,14 @@
 import crypto from 'node:crypto'
 
-const requiredFields = ['firstName', 'lastName', 'phoneNumber', 'username', 'email', 'password']
+const requiredFields = [
+  'firstName',
+  'lastName',
+  'phoneNumber',
+  'username',
+  'email',
+  'password',
+  'confirmPassword',
+]
 
 function base64Url(value) {
   return Buffer.from(value).toString('base64url')
@@ -99,6 +107,10 @@ export default async function handler(request, response) {
 
   if (missingField) {
     return response.status(400).json({ message: 'Please complete all admin registration fields.' })
+  }
+
+  if (getCellValue(admin, 'password') !== getCellValue(admin, 'confirmPassword')) {
+    return response.status(400).json({ message: 'Passwords do not match.' })
   }
 
   const row = [

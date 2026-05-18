@@ -13,9 +13,11 @@ const initialAdminRegistration = {
   username: '',
   email: '',
   password: '',
+  confirmPassword: '',
 }
 
 const initialStudent = {
+  registrationType: '',
   firstName: '',
   lastName: '',
   otherName: '',
@@ -143,6 +145,7 @@ const statesOfOrigin = [
 ]
 
 const requiredFields = [
+  'registrationType',
   'firstName',
   'lastName',
   'gender',
@@ -255,6 +258,12 @@ function App() {
     setStatus({ type: '', message: '' })
     setIsRegisteringAdmin(true)
 
+    if (adminRegistration.password !== adminRegistration.confirmPassword) {
+      setStatus({ type: 'error', message: 'Passwords do not match.' })
+      setIsRegisteringAdmin(false)
+      return
+    }
+
     try {
       const response = await fetch('/api/register-admin', {
         method: 'POST',
@@ -274,7 +283,7 @@ function App() {
         message:
           result.saved === false
             ? 'Admin form works, but Google Sheets is not configured yet.'
-            : 'Admin registration submitted.',
+            : 'Admin registration submitted for approval.',
       })
     } catch (error) {
       setStatus({ type: 'error', message: error.message })
@@ -476,6 +485,19 @@ function App() {
                   value={adminRegistration.password}
                 />
               </label>
+
+              <label>
+                Confirm password *
+                <input
+                  autoComplete="new-password"
+                  name="confirmPassword"
+                  onChange={updateAdminRegistration}
+                  placeholder="Confirm password"
+                  required
+                  type="password"
+                  value={adminRegistration.confirmPassword}
+                />
+              </label>
             </div>
 
             <button className="primary-action" disabled={isRegisteringAdmin} type="submit">
@@ -497,6 +519,20 @@ function App() {
             </div>
 
             <div className="form-grid">
+              <label className="full-width">
+                Registration type *
+                <select
+                  name="registrationType"
+                  onChange={updateStudent}
+                  required
+                  value={student.registrationType}
+                >
+                  <option value="">Select registration type</option>
+                  <option value="NewMatricNo">New Registration</option>
+                  <option value="Retained">Retained</option>
+                </select>
+              </label>
+
               <label>
                 First name *
                 <input
