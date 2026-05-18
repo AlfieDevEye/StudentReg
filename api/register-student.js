@@ -18,8 +18,8 @@ const requiredFields = [
 ]
 
 const registrationSheets = {
-  NewMatricNo: 'NewMatricNo',
-  Retained: 'Retained',
+  NewMatricNo: process.env.GOOGLE_NEW_STUDENT_SHEET_NAME || 'NewMatricNo',
+  Retained: process.env.GOOGLE_RETAINED_STUDENT_SHEET_NAME || 'Retained',
 }
 
 function base64Url(value) {
@@ -38,9 +38,13 @@ function getSheetName(registrationType) {
   return registrationSheets[registrationType] || ''
 }
 
+function quoteSheetName(sheetName) {
+  return `'${sheetName.replaceAll("'", "''")}'`
+}
+
 function getSheetRange(registrationType) {
   const sheetName = getSheetName(registrationType)
-  return sheetName ? `${sheetName}!A:O` : ''
+  return sheetName ? `${quoteSheetName(sheetName)}!A:O` : ''
 }
 
 function formatSubmittedDate(date = new Date()) {
@@ -92,7 +96,7 @@ async function getGoogleAccessToken() {
 }
 
 async function getNextSerialNumber(accessToken, registrationType) {
-  const range = encodeURIComponent(`${getSheetName(registrationType)}!A:A`)
+  const range = encodeURIComponent(`${quoteSheetName(getSheetName(registrationType))}!A:A`)
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${process.env.GOOGLE_SHEET_ID}/values/${range}`
 
   const sheetResponse = await fetch(url, {

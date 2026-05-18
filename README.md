@@ -25,6 +25,8 @@ ADMIN_USERS=[{"username":"admin1","password":"admin1-password"},{"username":"adm
 GOOGLE_SERVICE_ACCOUNT_EMAIL=your-service-account@your-project.iam.gserviceaccount.com
 GOOGLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nYOUR_PRIVATE_KEY\n-----END PRIVATE KEY-----\n"
 GOOGLE_SHEET_ID=your-google-sheet-id
+GOOGLE_NEW_STUDENT_SHEET_NAME=NewMatricNo
+GOOGLE_RETAINED_STUDENT_SHEET_NAME=Retained
 GOOGLE_ADMIN_SHEET_RANGE=Admins!A:H
 ```
 
@@ -37,6 +39,8 @@ SN | Matric. No. | Full Name | Programme | Department | Degree | Semester | Emai
 ```
 
 Share the Google Sheet with the service account email as an editor.
+
+If your tab names are different, set `GOOGLE_NEW_STUDENT_SHEET_NAME` and `GOOGLE_RETAINED_STUDENT_SHEET_NAME` to the exact Google Sheet tab names.
 
 Admins listed in `ADMIN_USERS` are the only approved login users. They can log in even if the Google Sheet ID is changed or unavailable.
 
