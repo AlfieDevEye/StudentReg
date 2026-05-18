@@ -46,6 +46,7 @@ const departments = [
   'English',
   'Finance',
   'History and International Studies',
+  'Law',
   'Mass Communication',
   'Mathematics and Statistics',
   'Physical Sciences',
