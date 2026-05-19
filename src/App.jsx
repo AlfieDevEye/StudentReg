@@ -107,6 +107,7 @@ const programmes = [
 const degrees = ['PGD', 'MA', 'MSC', 'PhD', 'Mphil-PhD', 'LLM', 'MBA']
 
 const statesOfOrigin = [
+  'None yet',
   'Abia',
   'Adamawa',
   'Akwa Ibom',
@@ -536,6 +537,17 @@ function App() {
               </label>
 
               <label>
+                Surname *
+                <input
+                  name="lastName"
+                  onChange={updateStudent}
+                  placeholder="Student surname"
+                  required
+                  value={student.lastName}
+                />
+              </label>
+
+              <label>
                 First name *
                 <input
                   name="firstName"
@@ -547,22 +559,11 @@ function App() {
               </label>
 
               <label>
-                Last name (Surname) *
-                <input
-                  name="lastName"
-                  onChange={updateStudent}
-                  placeholder="Student last name"
-                  required
-                  value={student.lastName}
-                />
-              </label>
-
-              <label>
-                Other name
+                Last name
                 <input
                   name="otherName"
                   onChange={updateStudent}
-                  placeholder="Optional"
+                  placeholder="Optional last name"
                   value={student.otherName}
                 />
               </label>
