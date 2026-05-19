@@ -35,7 +35,23 @@ function hasGoogleSheetConfig() {
 }
 
 function getSheetName(registrationType) {
-  return registrationSheets[registrationType] || ''
+  return normalizeSheetName(registrationSheets[registrationType] || '')
+}
+
+function normalizeSheetName(sheetName) {
+  const value = String(sheetName || '').trim()
+  const quotedRangeMatch = value.match(/^'((?:''|[^'])+)'!/)
+
+  if (quotedRangeMatch) {
+    return quotedRangeMatch[1].replaceAll("''", "'").trim()
+  }
+
+  const rangeSeparatorIndex = value.lastIndexOf('!')
+  if (rangeSeparatorIndex > -1) {
+    return value.slice(0, rangeSeparatorIndex).replace(/^'|'$/g, '').trim()
+  }
+
+  return value.replace(/^'|'$/g, '').trim()
 }
 
 function quoteSheetName(sheetName) {
