@@ -10,6 +10,17 @@ const requiredFields = [
   'confirmPassword',
 ]
 
+const adminHeaders = [
+  'Submitted At',
+  'First Name',
+  'Last Name',
+  'Phone Number',
+  'Username',
+  'Email',
+  'Password Hash',
+  'Status',
+]
+
 function base64Url(value) {
   return Buffer.from(value).toString('base64url')
 }
@@ -18,8 +29,59 @@ function hasGoogleSheetConfig() {
   return Boolean(
     process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL &&
       process.env.GOOGLE_PRIVATE_KEY &&
-      process.env.GOOGLE_SHEET_ID,
+      getAdminSpreadsheetId(),
   )
+}
+
+function getAdminSpreadsheetId() {
+  return normalizeSpreadsheetId(process.env.GOOGLE_ADMIN_SHEET_ID || process.env.GOOGLE_SHEET_ID)
+}
+
+function normalizeSpreadsheetId(spreadsheetId) {
+  const value = String(spreadsheetId || '').trim()
+  const urlMatch = value.match(/\/spreadsheets\/d\/([^/]+)/)
+
+  return urlMatch ? urlMatch[1] : value
+}
+
+function describeSheetError(sheetResult) {
+  if (sheetResult.error?.status === 'NOT_FOUND') {
+    return 'Admin spreadsheet was not found. Check GOOGLE_ADMIN_SHEET_ID and make sure the sheet is shared with the Google service account email.'
+  }
+
+  if (isUnableToParseRange(sheetResult)) {
+    return `Admin sheet tab "${getAdminSheetName()}" was not found. Create that tab in the admin spreadsheet or update GOOGLE_ADMIN_SHEET_RANGE.`
+  }
+
+  return sheetResult.error?.message || 'Could not save admin registration'
+}
+
+function isUnableToParseRange(sheetResult) {
+  return /Unable to parse range/i.test(sheetResult.error?.message || '')
+}
+
+function quoteSheetName(sheetName) {
+  return `'${sheetName.replaceAll("'", "''")}'`
+}
+
+function getAdminSheetName() {
+  const range = String(process.env.GOOGLE_ADMIN_SHEET_RANGE || 'Admins!A:H').trim()
+  const quotedRangeMatch = range.match(/^'((?:''|[^'])+)'!/)
+
+  if (quotedRangeMatch) {
+    return quotedRangeMatch[1].replaceAll("''", "'").trim()
+  }
+
+  const rangeSeparatorIndex = range.lastIndexOf('!')
+  if (rangeSeparatorIndex > -1) {
+    return range.slice(0, rangeSeparatorIndex).replace(/^'|'$/g, '').trim()
+  }
+
+  return range.replace(/^'|'$/g, '').trim() || 'Admins'
+}
+
+function getAdminSheetRange() {
+  return `${quoteSheetName(getAdminSheetName())}!A:H`
 }
 
 function formatSubmittedDate(date = new Date()) {
@@ -79,8 +141,12 @@ async function getGoogleAccessToken() {
 
 async function appendAdminRequest(row) {
   const accessToken = await getGoogleAccessToken()
-  const range = encodeURIComponent(process.env.GOOGLE_ADMIN_SHEET_RANGE || 'Admins!A:H')
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${process.env.GOOGLE_SHEET_ID}/values/${range}:append?valueInputOption=USER_ENTERED`
+  await appendAdminRequestWithRetry(row, accessToken)
+}
+
+async function appendAdminRequestWithRetry(row, accessToken, hasCreatedSheet = false) {
+  const range = encodeURIComponent(getAdminSheetRange())
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${getAdminSpreadsheetId()}/values/${range}:append?valueInputOption=USER_ENTERED`
 
   const sheetResponse = await fetch(url, {
     method: 'POST',
@@ -93,7 +159,59 @@ async function appendAdminRequest(row) {
 
   const sheetResult = await sheetResponse.json()
   if (!sheetResponse.ok) {
-    throw new Error(sheetResult.error?.message || 'Could not save admin registration')
+    if (!hasCreatedSheet && isUnableToParseRange(sheetResult)) {
+      await createAdminSheet(accessToken)
+      return appendAdminRequestWithRetry(row, accessToken, true)
+    }
+
+    throw new Error(describeSheetError(sheetResult))
+  }
+}
+
+async function createAdminSheet(accessToken) {
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${getAdminSpreadsheetId()}:batchUpdate`
+  const sheetResponse = await fetch(url, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      requests: [
+        {
+          addSheet: {
+            properties: {
+              title: getAdminSheetName(),
+            },
+          },
+        },
+      ],
+    }),
+  })
+
+  const sheetResult = await sheetResponse.json()
+  if (!sheetResponse.ok && !/already exists/i.test(sheetResult.error?.message || '')) {
+    throw new Error(describeSheetError(sheetResult))
+  }
+
+  await writeAdminHeaders(accessToken)
+}
+
+async function writeAdminHeaders(accessToken) {
+  const range = encodeURIComponent(`${quoteSheetName(getAdminSheetName())}!A1:H1`)
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${getAdminSpreadsheetId()}/values/${range}?valueInputOption=USER_ENTERED`
+  const sheetResponse = await fetch(url, {
+    method: 'PUT',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ values: [adminHeaders] }),
+  })
+
+  const sheetResult = await sheetResponse.json()
+  if (!sheetResponse.ok) {
+    throw new Error(describeSheetError(sheetResult))
   }
 }
 

@@ -30,8 +30,19 @@ function hasGoogleSheetConfig() {
   return Boolean(
     process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL &&
       process.env.GOOGLE_PRIVATE_KEY &&
-      process.env.GOOGLE_SHEET_ID,
+      getStudentSpreadsheetId(),
   )
+}
+
+function getStudentSpreadsheetId() {
+  return normalizeSpreadsheetId(process.env.GOOGLE_SHEET_ID)
+}
+
+function normalizeSpreadsheetId(spreadsheetId) {
+  const value = String(spreadsheetId || '').trim()
+  const urlMatch = value.match(/\/spreadsheets\/d\/([^/]+)/)
+
+  return urlMatch ? urlMatch[1] : value
 }
 
 function getSheetName(registrationType) {
@@ -75,6 +86,14 @@ function getCellValue(source, field) {
   return String(source[field] || '').trim()
 }
 
+function describeSheetError(sheetResult, fallbackMessage) {
+  if (sheetResult.error?.status === 'NOT_FOUND') {
+    return 'Student spreadsheet was not found. Check GOOGLE_SHEET_ID and make sure the sheet is shared with the Google service account email.'
+  }
+
+  return sheetResult.error?.message || fallbackMessage
+}
+
 async function getGoogleAccessToken() {
   const now = Math.floor(Date.now() / 1000)
   const header = base64Url(JSON.stringify({ alg: 'RS256', typ: 'JWT' }))
@@ -113,7 +132,7 @@ async function getGoogleAccessToken() {
 
 async function getNextSerialNumber(accessToken, registrationType) {
   const range = encodeURIComponent(`${quoteSheetName(getSheetName(registrationType))}!A:A`)
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${process.env.GOOGLE_SHEET_ID}/values/${range}`
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${getStudentSpreadsheetId()}/values/${range}`
 
   const sheetResponse = await fetch(url, {
     headers: {
@@ -123,7 +142,7 @@ async function getNextSerialNumber(accessToken, registrationType) {
 
   const sheetResult = await sheetResponse.json()
   if (!sheetResponse.ok) {
-    throw new Error(sheetResult.error?.message || 'Could not read serial number from Google Sheet')
+    throw new Error(describeSheetError(sheetResult, 'Could not read serial number from Google Sheet'))
   }
 
   return Math.max(sheetResult.values?.length || 0, 1)
@@ -131,7 +150,7 @@ async function getNextSerialNumber(accessToken, registrationType) {
 
 async function appendToSheet(row, accessToken, registrationType) {
   const range = encodeURIComponent(getSheetRange(registrationType))
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${process.env.GOOGLE_SHEET_ID}/values/${range}:append?valueInputOption=USER_ENTERED`
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${getStudentSpreadsheetId()}/values/${range}:append?valueInputOption=USER_ENTERED`
 
   const sheetResponse = await fetch(url, {
     method: 'POST',
@@ -144,7 +163,7 @@ async function appendToSheet(row, accessToken, registrationType) {
 
   const sheetResult = await sheetResponse.json()
   if (!sheetResponse.ok) {
-    throw new Error(sheetResult.error?.message || 'Could not save to Google Sheet')
+    throw new Error(describeSheetError(sheetResult, 'Could not save to Google Sheet'))
   }
 }
 

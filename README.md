@@ -27,6 +27,7 @@ GOOGLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nYOUR_PRIVATE_KEY\n-----END PRIV
 GOOGLE_SHEET_ID=your-google-sheet-id
 GOOGLE_NEW_STUDENT_SHEET_NAME=NewMatricNo
 GOOGLE_RETAINED_STUDENT_SHEET_NAME=Retained
+GOOGLE_ADMIN_SHEET_ID=your-admin-google-sheet-id
 GOOGLE_ADMIN_SHEET_RANGE=Admins!A:H
 ```
 
@@ -44,13 +45,21 @@ If your tab names are different, set `GOOGLE_NEW_STUDENT_SHEET_NAME` and `GOOGLE
 
 Admins listed in `ADMIN_USERS` are the only approved login users. They can log in even if the Google Sheet ID is changed or unavailable.
 
-Create an `Admins` sheet tab with these columns:
+Create a separate admin Google spreadsheet if you do not want admin requests stored with student records. Share that spreadsheet with the same service account email as an editor, copy its spreadsheet ID, and set:
+
+```env
+GOOGLE_ADMIN_SHEET_ID=your-admin-google-sheet-id
+```
+
+If `GOOGLE_ADMIN_SHEET_ID` is not set, admin requests fall back to `GOOGLE_SHEET_ID`.
+
+In the admin spreadsheet, create an `Admins` sheet tab with these columns:
 
 ```text
 Submitted At | First Name | Last Name | Phone Number | Username | Email | Password Hash | Status
 ```
 
-Admin registration submissions are requests only. To approve an admin, add that admin to the server-side `ADMIN_USERS` environment variable.
+Admin registration submissions are requests only. To approve an admin, copy the username and password hash from the admin spreadsheet into the server-side `ADMIN_USERS` environment variable.
 
 Generate a hashed admin entry with:
 
@@ -63,3 +72,5 @@ The command prints one JSON object. Add it to `ADMIN_USERS`, for example:
 ```env
 ADMIN_USERS=[{"username":"admin1","password":"existing-password"},{"username":"admin3","password":"generated-salt:generated-hash"}]
 ```
+
+An admin row saved from the registration form already includes the password hash, so you can use that hash directly when updating `ADMIN_USERS`.
