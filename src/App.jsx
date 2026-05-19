@@ -571,8 +571,8 @@ function App() {
                 Gender *
                 <select name="gender" onChange={updateStudent} required value={student.gender}>
                   <option value="">Select gender</option>
-                  <option value="Female">Female</option>
-                  <option value="Male">Male</option>
+                  <option value="Female">F</option>
+                  <option value="Male">M</option>
                 </select>
               </label>
 
@@ -637,8 +637,8 @@ function App() {
                 Semester *
                 <select name="semester" onChange={updateStudent} required value={student.semester}>
                   <option value="">Select semester</option>
-                  <option value="1st">1st</option>
-                  <option value="2nd">2nd</option>
+                  <option value="1st">1ST</option>
+                  <option value="2nd">2ND</option>
                 </select>
               </label>
 
