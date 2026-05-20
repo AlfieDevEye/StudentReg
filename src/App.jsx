@@ -31,6 +31,7 @@ const initialStudent = {
   phoneNumber: '',
   stateOfOrigin: '',
   studyMode: '',
+  existingMatricNumber: '',
 }
 
 
@@ -203,6 +204,7 @@ function App() {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const isLoggedIn = Boolean(session?.token)
+  const isRetainedRegistration = student.registrationType === 'Retained'
 
   function updateLogin(event) {
     const { name, value } = event.target
@@ -216,7 +218,11 @@ function App() {
 
   function updateStudent(event) {
     const { name, value } = event.target
-    setStudent((current) => ({ ...current, [name]: value }))
+    setStudent((current) => ({
+      ...current,
+      [name]: value,
+      ...(name === 'registrationType' && value !== 'Retained' ? { existingMatricNumber: '' } : {}),
+    }))
   }
 
   function switchAuthMode(nextMode) {
@@ -302,6 +308,11 @@ function App() {
     const missingField = requiredFields.find((field) => !student[field].trim())
     if (missingField) {
       setStatus({ type: 'error', message: 'Please complete all required fields.' })
+      return
+    }
+
+    if (isRetainedRegistration && !student.existingMatricNumber.trim()) {
+      setStatus({ type: 'error', message: 'Please enter the existing matric number.' })
       return
     }
 
@@ -559,11 +570,11 @@ function App() {
               </label>
 
               <label>
-                Last name
+                Other name
                 <input
                   name="otherName"
                   onChange={updateStudent}
-                  placeholder="Optional last name"
+                  placeholder="Optional other name"
                   value={student.otherName}
                 />
               </label>
@@ -572,8 +583,8 @@ function App() {
                 Gender *
                 <select name="gender" onChange={updateStudent} required value={student.gender}>
                   <option value="">Select gender</option>
-                  <option value="Female">F</option>
-                  <option value="Male">M</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
                 </select>
               </label>
 
@@ -691,6 +702,19 @@ function App() {
                   <option value="Part-Time">Part-Time</option>
                 </select>
               </label>
+
+              {isRetainedRegistration && (
+                <label className="full-width">
+                  Existing matric number *
+                  <input
+                    name="existingMatricNumber"
+                    onChange={updateStudent}
+                    placeholder="Enter existing matric number"
+                    required
+                    value={student.existingMatricNumber}
+                  />
+                </label>
+              )}
             </div>
 
             <button className="primary-action" disabled={isSubmitting} type="submit">

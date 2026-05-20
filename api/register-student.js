@@ -75,11 +75,21 @@ function getSheetRange(registrationType) {
 }
 
 function formatSubmittedDate(date = new Date()) {
-  const day = String(date.getDate()).padStart(2, '0')
   const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
   const year = date.getFullYear()
 
-  return `${day}/${month}/${year}`
+  return `${month}/${day}/${year}`
+}
+
+function formatSheetDate(value) {
+  const [year, month, day] = String(value || '').split('-')
+
+  if (!year || !month || !day) {
+    return getCellValue({ value }, 'value')
+  }
+
+  return `${month.padStart(2, '0')}/${day.padStart(2, '0')}/${year}`
 }
 
 function getCellValue(source, field) {
@@ -191,6 +201,11 @@ export default async function handler(request, response) {
     return response.status(400).json({ message: 'Please select a valid registration type.' })
   }
 
+  const existingMatricNumber = getCellValue(student, 'existingMatricNumber')
+  if (registrationType === 'Retained' && !existingMatricNumber) {
+    return response.status(400).json({ message: 'Please enter the existing matric number.' })
+  }
+
   const submittedAt = formatSubmittedDate()
   const studentName = [
     String(student.lastName || '').trim().toUpperCase(),
@@ -213,7 +228,7 @@ export default async function handler(request, response) {
     const serialNumber = await getNextSerialNumber(accessToken, registrationType)
     const row = [
       serialNumber,
-      '',
+      registrationType === 'Retained' ? existingMatricNumber : '',
       studentName,
       getCellValue(student, 'programme'),
       getCellValue(student, 'department'),
@@ -222,7 +237,7 @@ export default async function handler(request, response) {
       getCellValue(student, 'email'),
       getCellValue(student, 'phoneNumber'),
       getCellValue(student, 'stateOfOrigin'),
-      getCellValue(student, 'dateOfBirth'),
+      formatSheetDate(student.dateOfBirth),
       getCellValue(student, 'gender'),
       getCellValue(student, 'studyMode'),
       submittedAt,
