@@ -202,6 +202,8 @@ function App() {
   const [isLoggingIn, setIsLoggingIn] = useState(false)
   const [isRegisteringAdmin, setIsRegisteringAdmin] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [showLoginPassword, setShowLoginPassword] = useState(false)
+  const [showAdminPassword, setShowAdminPassword] = useState(false)
 
   const isLoggedIn = Boolean(session?.token)
   const isRetainedRegistration = student.registrationType === 'Retained'
@@ -406,9 +408,18 @@ function App() {
                 onChange={updateLogin}
                 placeholder="Enter password"
                 required
-                type="password"
+                type={showLoginPassword ? 'text' : 'password'}
                 value={login.password}
               />
+            </label>
+
+            <label className="password-toggle">
+              <input
+                checked={showLoginPassword}
+                onChange={(event) => setShowLoginPassword(event.target.checked)}
+                type="checkbox"
+              />
+              Show password
             </label>
 
             <button className="primary-action" disabled={isLoggingIn} type="submit">
@@ -495,7 +506,7 @@ function App() {
                   onChange={updateAdminRegistration}
                   placeholder="Create password"
                   required
-                  type="password"
+                  type={showAdminPassword ? 'text' : 'password'}
                   value={adminRegistration.password}
                 />
               </label>
@@ -508,9 +519,18 @@ function App() {
                   onChange={updateAdminRegistration}
                   placeholder="Confirm password"
                   required
-                  type="password"
+                  type={showAdminPassword ? 'text' : 'password'}
                   value={adminRegistration.confirmPassword}
                 />
+              </label>
+
+              <label className="password-toggle full-width">
+                <input
+                  checked={showAdminPassword}
+                  onChange={(event) => setShowAdminPassword(event.target.checked)}
+                  type="checkbox"
+                />
+                Show password
               </label>
             </div>
 

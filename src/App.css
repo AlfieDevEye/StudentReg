@@ -133,6 +133,20 @@ textarea:focus {
   outline: none;
 }
 
+.password-toggle {
+  align-items: center;
+  flex-direction: row;
+  font-size: 13px;
+  gap: 10px;
+  width: fit-content;
+}
+
+.password-toggle input {
+  accent-color: #0f766e;
+  min-height: auto;
+  padding: 0;
+}
+
 .full-width {
   grid-column: 1 / -1;
 }
