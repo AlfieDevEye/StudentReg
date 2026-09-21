@@ -2,7 +2,7 @@
 
 A full-stack student registration system built with React and Google APIs, designed to simplify student registration and securely save submitted records to Google Sheets.
 
-### ✨ Key Features
+### Key Features
 
 * Student registration and record management
 * Secure administrator authentication
@@ -12,7 +12,7 @@ A full-stack student registration system built with React and Google APIs, desig
 * Responsive interface
 * Vercel deployment support
 
-### 🛠️ Tech Stack
+### Tech Stack
 
 * React
 * JavaScript
