@@ -294,8 +294,8 @@ function App() {
       return
     }
 
-    if (!student.dateOfBirth.trim() || !/^\d{2}\/\d{2}\/\d{4}$/.test(student.dateOfBirth)) {
-      setStatus({ type: 'error', message: 'Please enter Date of birth in DD/MM/YYYY format.' })
+    if (!student.dateOfBirth.trim() || !/^\d{4}-\d{2}-\d{2}$/.test(student.dateOfBirth)) {
+      setStatus({ type: 'error', message: 'Please select a valid Date of birth.' })
       return
     }
 
@@ -317,7 +317,10 @@ function App() {
           Authorization: `Bearer ${session.token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(student),
+        body: JSON.stringify({
+          ...student,
+          dateOfBirth: student.dateOfBirth.split('-').reverse().join('/'),
+        }),
       })
       const result = await readJsonResponse(response)
 
@@ -602,12 +605,11 @@ function App() {
               <label>
                 Date of birth *
                 <input
+                  lang="en-GB"
                   name="dateOfBirth"
                   onChange={updateStudent}
-                  placeholder="DD/MM/YYYY"
                   required
-                  type="text"
-                  pattern="\\d{2}/\\d{2}/\\d{4}"
+                  type="date"
                   value={student.dateOfBirth}
                 />
               </label>
