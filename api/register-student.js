@@ -6,7 +6,6 @@ const requiredFields = [
   'firstName',
   'lastName',
   'gender',
-  'dateOfBirth',
   'programme',
   'department',
   'degree',
@@ -71,7 +70,7 @@ function quoteSheetName(sheetName) {
 
 function getSheetRange(registrationType) {
   const sheetName = getSheetName(registrationType)
-  return sheetName ? `${quoteSheetName(sheetName)}!A:O` : ''
+  return sheetName ? `${quoteSheetName(sheetName)}!A:P` : ''
 }
 
 function formatSubmittedDate(date = new Date()) {
@@ -83,13 +82,7 @@ function formatSubmittedDate(date = new Date()) {
 }
 
 function formatSheetDate(value) {
-  const [year, month, day] = String(value || '').split('-')
-
-  if (!year || !month || !day) {
-    return getCellValue({ value }, 'value')
-  }
-
-  return `${month.padStart(2, '0')}/${day.padStart(2, '0')}/${year}`
+  return getCellValue({ value }, 'value')
 }
 
 function getCellValue(source, field) {
@@ -196,6 +189,11 @@ export default async function handler(request, response) {
     return response.status(400).json({ message: 'Please complete all required fields.' })
   }
 
+  const dateOfBirth = getCellValue(student, 'dateOfBirth')
+  if (!/^\d{2}\/\d{2}\/\d{4}$/.test(dateOfBirth)) {
+    return response.status(400).json({ message: 'Please enter Date of birth in DD/MM/YYYY format.' })
+  }
+
   const registrationType = getCellValue(student, 'registrationType')
   if (!registrationSheets[registrationType]) {
     return response.status(400).json({ message: 'Please select a valid registration type.' })
@@ -204,6 +202,12 @@ export default async function handler(request, response) {
   const existingMatricNumber = getCellValue(student, 'existingMatricNumber')
   if (registrationType === 'Retained' && !existingMatricNumber) {
     return response.status(400).json({ message: 'Please enter the existing matric number.' })
+  }
+
+  const transcriptStatus = getCellValue(student, 'transcriptStatus')
+  const transcriptOptions = ['OFFICIAL TRANSCRIPT', 'STUDENT TRANSCRIPT', 'NO TRANSCRIPT']
+  if (registrationType !== 'Retained' && !transcriptOptions.includes(transcriptStatus)) {
+    return response.status(400).json({ message: 'Please select a valid transcript status.' })
   }
 
   const submittedAt = formatSubmittedDate()
@@ -237,9 +241,10 @@ export default async function handler(request, response) {
       getCellValue(student, 'email'),
       getCellValue(student, 'phoneNumber'),
       getCellValue(student, 'stateOfOrigin'),
-      formatSheetDate(student.dateOfBirth),
+      formatSheetDate(dateOfBirth),
       getCellValue(student, 'gender'),
       getCellValue(student, 'studyMode'),
+      registrationType === 'Retained' ? '' : transcriptStatus,
       submittedAt,
       admin.username,
     ]

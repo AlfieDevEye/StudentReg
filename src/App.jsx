@@ -23,6 +23,7 @@ const initialStudent = {
   otherName: '',
   gender: '',
   dateOfBirth: '',
+  transcriptStatus: '',
   programme: '',
   department: '',
   degree: '',
@@ -47,6 +48,7 @@ const departments = [
   'Economics',
   'English',
   'Finance',
+  'Master of Business Administration (MBA)',
   'History and International Studies',
   'Law',
   'Mass Communication',
@@ -58,53 +60,6 @@ const departments = [
   'Theatre Arts',
   'Tourism and Hospitality Studies',
 ]
-const programmes = [
-'Accounting',
-'Biochemistry',
-'Bioinformatics',
-'Business Administration',
-'Christian Religious Studies',
-'Communication and Media Studies',
-'Computer Science',
-'Economics',
-'English (Language Emphasis)',
-'English (Literature Emphasis)',
-'Environmental and Analytical Chemistry',
-'Finance',
-'Gender and Development Studies',
-'History and International Studies',
-'Hospitality and Tourism Management',
-'Humanitarian and Development Studies',
-'Industrial Chemistry',
-'Law',
-'Management',
-'Master of Business Administration',
-'Materials Chemistry',
-'Mathematics',
-'Microbiology (Environmental Microbiology)',
-'Microbiology (Food Microbiology)',
-'Microbiology (Medical Microbiology)',
-'Molecular Biology and Genomics',
-'Peace and Governance Studies',
-'Peace and Religion Studies',
-'Physics (Communication Physics)',
-'Physics (Instrumentation Physics)',
-'Physics (Lower Atmospheric Physics)',
-'Physics (Radiation and Health Physics)',
-'Physics (Renewable Energy Physics)',
-'Physics (Solid Earth Physics-Geophysics)',
-'Physics (Theoretical and Computational Physics)',
-'Political Science',
-'Psychology (Developmental Psychology)',
-'Psychology (Clinical Psychology)',
-'Psychology (Social Psychology)',
-'Social Work',
-'Sociology',
-'Statistics',
-'Theatre Arts',
-'Transport Management',
-]
-
 const degrees = ['PGD', 'MA', 'MSC', 'PhD', 'Mphil-PhD', 'LLM', 'MBA']
 
 const statesOfOrigin = [
@@ -153,7 +108,6 @@ const requiredFields = [
   'firstName',
   'lastName',
   'gender',
-  'dateOfBirth',
   'programme',
   'department',
   'degree',
@@ -163,6 +117,31 @@ const requiredFields = [
   'stateOfOrigin',
   'studyMode',
 ]
+
+const programmesByDepartment = {
+  Accounting: ['Accounting'],
+  Biochemistry: ['Biochemistry'],
+  'Biological Sciences': ['Bioinformatics', 'Microbiology (Environmental Microbiology)', 'Microbiology (Food Microbiology)', 'Microbiology (Medical Microbiology)', 'Molecular Biology and Genomics'],
+  'Business Administration & Marketing': ['Business Administration', 'Management (Human Resource Management)'],
+  CGHDS: ['Gender and Development Studies', 'Humanitarian and Development Studies', 'Peace and Governance Studies', 'Peace and Religion Studies'],
+  'Chemical Sciences': ['Environmental and Analytical Chemistry', 'Industrial Chemistry', 'Materials Chemistry'],
+  'Christian Religious Studies & Philosophy': ['Christian Religious Studies'],
+  'Computer Science': ['Computer Science'],
+  Economics: ['Economics'],
+  English: ['English (Language Emphasis)', 'English (Literature Emphasis)'],
+  Finance: ['Finance'],
+  'History and International Studies': ['History and International Studies'],
+  Law: ['Law'],
+  'Mass Communication': ['Communication and Media Studies'],
+  'Mathematics and Statistics': ['Mathematics', 'Statistics'],
+  'Physical Sciences': ['Physics (Communication Physics)', 'Physics (Instrumentation Physics)', 'Physics (Lower Atmospheric Physics)', 'Physics (Radiation and Health Physics)', 'Physics (Renewable Energy Physics)', 'Physics (Solid Earth Physics-Geophysics)', 'Physics (Theoretical and Computational Physics)'],
+  'Political Science': ['Political Science'],
+  Psychology: ['Psychology (Developmental Psychology)', 'Psychology (Clinical Psychology)', 'Psychology (Social Psychology)'],
+  'Sociology and Social Work': ['Social Work', 'Sociology'],
+  'Theatre Arts': ['Theatre Arts'],
+  'Tourism and Hospitality Studies': ['Hospitality and Tourism Management', 'Transport Management'],
+  'Master of Business Administration (MBA)': ['Master of Business Administration (MBA)'],
+}
 
 async function readJsonResponse(response) {
   const text = await response.text()
@@ -207,6 +186,7 @@ function App() {
 
   const isLoggedIn = Boolean(session?.token)
   const isRetainedRegistration = student.registrationType === 'Retained'
+  const availableProgrammes = programmesByDepartment[student.department] || []
 
   function updateLogin(event) {
     const { name, value } = event.target
@@ -223,6 +203,7 @@ function App() {
     setStudent((current) => ({
       ...current,
       [name]: value,
+      ...(name === 'department' ? { programme: '' } : {}),
       ...(name === 'registrationType' && value !== 'Retained' ? { existingMatricNumber: '' } : {}),
     }))
   }
@@ -310,6 +291,16 @@ function App() {
     const missingField = requiredFields.find((field) => !student[field].trim())
     if (missingField) {
       setStatus({ type: 'error', message: 'Please complete all required fields.' })
+      return
+    }
+
+    if (!student.dateOfBirth.trim() || !/^\d{2}\/\d{2}\/\d{4}$/.test(student.dateOfBirth)) {
+      setStatus({ type: 'error', message: 'Please enter Date of birth in DD/MM/YYYY format.' })
+      return
+    }
+
+    if (!isRetainedRegistration && !student.transcriptStatus) {
+      setStatus({ type: 'error', message: 'Please select a transcript status.' })
       return
     }
 
@@ -613,27 +604,12 @@ function App() {
                 <input
                   name="dateOfBirth"
                   onChange={updateStudent}
+                  placeholder="DD/MM/YYYY"
                   required
-                  type="date"
+                  type="text"
+                  pattern="\\d{2}/\\d{2}/\\d{4}"
                   value={student.dateOfBirth}
                 />
-              </label>
-
-              <label>
-                Programme *
-                <select
-                  name="programme"
-                  onChange={updateStudent}
-                  required
-                  value={student.programme}
-                >
-                  <option value="">Select programme</option>
-                  {programmes.map((programme) => (
-                    <option key={programme} value={programme}>
-                      {programme}
-                    </option>
-                  ))}
-                </select>
               </label>
 
               <label>
@@ -648,6 +624,24 @@ function App() {
                   {departments.map((department) => (
                     <option key={department} value={department}>
                       {department}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label>
+                Programme *
+                <select
+                  name="programme"
+                  onChange={updateStudent}
+                  required
+                  disabled={!student.department}
+                  value={student.programme}
+                >
+                  <option value="">Select programme</option>
+                  {availableProgrammes.map((programme) => (
+                    <option key={programme} value={programme}>
+                      {programme}
                     </option>
                   ))}
                 </select>
@@ -733,6 +727,17 @@ function App() {
                     required
                     value={student.existingMatricNumber}
                   />
+                </label>
+              )}
+              {!isRetainedRegistration && (
+                <label>
+                  Transcript*
+                  <select name="transcriptStatus" onChange={updateStudent} required value={student.transcriptStatus}>
+                    <option value="">Select transcript status</option>
+                    <option value="OFFICIAL TRANSCRIPT">OFFICIAL TRANSCRIPT</option>
+                    <option value="STUDENT TRANSCRIPT">STUDENT TRANSCRIPT</option>
+                    <option value="NO TRANSCRIPT">NO TRANSCRIPT</option>
+                  </select>
                 </label>
               )}
             </div>
