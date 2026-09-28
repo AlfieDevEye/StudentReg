@@ -1,3 +1,25 @@
+# Student Registration Management System
+
+A full-stack student registration system built with React and Google APIs, designed to simplify student registration and securely save submitted records to Google Sheets.
+
+### Key Features
+
+* Student registration and record management
+* Secure administrator authentication
+* Google Sheets integration
+* Separate handling of new and retained students
+* Admin registration and approval workflow
+* Responsive interface
+* Vercel deployment support
+
+### Tech Stack
+
+* React
+* JavaScript
+* Vite
+* Google Sheets API
+* Vercel
+
 # Student Registration
 
 A single-page React app for admins to register students and save each submission to Google Sheets.
