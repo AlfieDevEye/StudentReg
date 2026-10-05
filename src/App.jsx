@@ -739,6 +739,7 @@ function App() {
                     <option value="OFFICIAL TRANSCRIPT">OFFICIAL TRANSCRIPT</option>
                     <option value="STUDENT TRANSCRIPT">STUDENT TRANSCRIPT</option>
                     <option value="NO TRANSCRIPT">NO TRANSCRIPT</option>
+                    <option value="RUN Alumnus/Alumna">RUN Alumnus/Alumna</option>
                   </select>
                 </label>
               )}

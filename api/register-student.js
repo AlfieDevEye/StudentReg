@@ -205,7 +205,7 @@ export default async function handler(request, response) {
   }
 
   const transcriptStatus = getCellValue(student, 'transcriptStatus')
-  const transcriptOptions = ['OFFICIAL TRANSCRIPT', 'STUDENT TRANSCRIPT', 'NO TRANSCRIPT']
+  const transcriptOptions = ['OFFICIAL TRANSCRIPT', 'STUDENT TRANSCRIPT', 'NO TRANSCRIPT', 'RUN Alumnus/Alumna']
   if (registrationType !== 'Retained' && !transcriptOptions.includes(transcriptStatus)) {
     return response.status(400).json({ message: 'Please select a valid transcript status.' })
   }
