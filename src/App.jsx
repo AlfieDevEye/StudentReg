@@ -38,6 +38,7 @@ const initialStudent = {
 
 const departments = [
   'Accounting',
+  'Architecture',
   'Biochemistry',
   'Biological Sciences',
   'Business Administration & Marketing',
@@ -48,6 +49,7 @@ const departments = [
   'Economics',
   'English',
   'Finance',
+  'Human Physiology',
   'Master of Business Administration (MBA)',
   'History and International Studies',
   'Law',
@@ -120,6 +122,7 @@ const requiredFields = [
 
 const programmesByDepartment = {
   Accounting: ['Accounting'],
+  Architecture: ['Architecture'],
   Biochemistry: ['Biochemistry'],
   'Biological Sciences': ['Bioinformatics', 'Microbiology (Environmental Microbiology)', 'Microbiology (Food Microbiology)', 'Microbiology (Medical Microbiology)', 'Molecular Biology and Genomics'],
   'Business Administration & Marketing': ['Business Administration', 'Management (Human Resource Management)'],
@@ -130,6 +133,7 @@ const programmesByDepartment = {
   Economics: ['Economics'],
   English: ['English (Language Emphasis)', 'English (Literature Emphasis)'],
   Finance: ['Finance'],
+  'Human Physiology': ['Human Physiology'],
   'History and International Studies': ['History and International Studies'],
   Law: ['Law'],
   'Mass Communication': ['Communication and Media Studies'],
@@ -739,7 +743,6 @@ function App() {
                     <option value="OFFICIAL TRANSCRIPT">OFFICIAL TRANSCRIPT</option>
                     <option value="STUDENT TRANSCRIPT">STUDENT TRANSCRIPT</option>
                     <option value="NO TRANSCRIPT">NO TRANSCRIPT</option>
-                    <option value="RUN Alumnus/Alumna">RUN Alumnus/Alumna</option>
                   </select>
                 </label>
               )}
