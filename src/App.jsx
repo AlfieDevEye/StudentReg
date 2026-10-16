@@ -61,6 +61,7 @@ const departments = [
   'Sociology and Social Work',
   'Theatre Arts',
   'Tourism and Hospitality Studies',
+  'Transport Management',
 ]
 const degrees = ['PGD', 'MA', 'MSC', 'PhD', 'Mphil-PhD', 'LLM', 'MBA']
 
@@ -143,7 +144,8 @@ const programmesByDepartment = {
   Psychology: ['Psychology (Developmental Psychology)', 'Psychology (Clinical Psychology)', 'Psychology (Social Psychology)'],
   'Sociology and Social Work': ['Social Work', 'Sociology'],
   'Theatre Arts': ['Theatre Arts'],
-  'Tourism and Hospitality Studies': ['Hospitality and Tourism Management', 'Transport Management'],
+  'Tourism and Hospitality Studies': ['Hospitality and Tourism Management'],
+  'Transport Management': ['Transport Management'],
   'Master of Business Administration (MBA)': ['Master of Business Administration (MBA)'],
 }
 
